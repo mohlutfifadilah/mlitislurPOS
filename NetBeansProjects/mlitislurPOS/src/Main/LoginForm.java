@@ -132,6 +132,9 @@ public class LoginForm extends javax.swing.JFrame {
             rs = stat.executeQuery(sql);
             if(rs.next()){
                 if(nama_admin.equals(rs.getString("nama_admin")) && password.equals(rs.getString("password"))){
+                    // Set session
+                    Session.setNamaAdmin(nama_admin);
+                    Session.setLoggedIn(true);
                     JOptionPane.showMessageDialog(null, "berhasil login");
                     new dashboard().setVisible(true); // Buka dashboard
                     dispose(); // Tutup form login
