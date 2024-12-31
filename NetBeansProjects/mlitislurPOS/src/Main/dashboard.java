@@ -17,6 +17,7 @@ import java.sql.Statement;
 import javax.swing.table.DefaultTableModel;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.awt.event.KeyEvent;
 
 public class dashboard extends javax.swing.JFrame {
 
@@ -44,14 +45,36 @@ public class dashboard extends javax.swing.JFrame {
         sessionNama.setText(Session.getNamaAdmin());
         
         tampilAdmin();
+//        tableAdmin.addKeyListener(new java.awt.event.KeyAdapter() {
+//            public void keyPressed(java.awt.event.KeyEvent evt) {
+//                tableAdminKeyPressed(evt);
+//            }
+//        });
         
         showTipeLayanan();
+//        showTipePelanggan();
         tampilLayanan();
+//        tampilPelanggan();
+//        tableLayanan.addKeyListener(new java.awt.event.KeyAdapter() {
+//            public void keyPressed(java.awt.event.KeyEvent evt) {
+//                tableLayananKeyPressed(evt);
+//            }
+//        });
         
         showTipePelanggan();
         tampilPelanggan();
+//        tablePelanggan.addKeyListener(new java.awt.event.KeyAdapter() {
+//            public void keyPressed(java.awt.event.KeyEvent evt) {
+//                tablePelangganKeyPressed(evt);
+//            }
+//        });
         
         tampilInvoice();
+//        tableInvoice.addKeyListener(new java.awt.event.KeyAdapter() {
+//            public void keyPressed(java.awt.event.KeyEvent evt) {
+//                tableInvoiceKeyPressed(evt);
+//            }
+//        });
         
         // Order
         adminOrderField.setText(Session.getNamaAdmin());
@@ -65,6 +88,9 @@ public class dashboard extends javax.swing.JFrame {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery("SELECT jenis_kendaraan from tipe");
                     
+            // Kosongkan ComboBox sebelum menambahkan item baru
+            cmbBoxTipeLayanan.removeAllItems();
+            
             while(rs.next()) {
                 String jenis_kendaraan = rs.getString("jenis_kendaraan");
                 cmbBoxTipeLayanan.addItem(jenis_kendaraan);
@@ -83,6 +109,8 @@ public class dashboard extends javax.swing.JFrame {
             Statement stm = con.createStatement();
             ResultSet rs = stm.executeQuery("SELECT jenis_kendaraan from tipe");
                     
+            cmbBoxTipePelanggan.removeAllItems();
+            
             while(rs.next()) {
                 String jenis_kendaraan = rs.getString("jenis_kendaraan");
                 cmbBoxTipePelanggan.addItem(jenis_kendaraan);
@@ -96,20 +124,19 @@ public class dashboard extends javax.swing.JFrame {
     
     public void tampilAdmin(){
         DefaultTableModel tabel = new DefaultTableModel();
-        tabel.addColumn("no");
+        tabel.addColumn("Id");
         tabel.addColumn("Nama Admin");
         tabel.addColumn("No Whatsapp");
         try {
             java.sql.Connection conn = (java.sql.Connection)con;
-            String sql = "select nama_admin, no_whatsapp from admin";
+            String sql = "select id, nama_admin, no_whatsapp from admin";
             java.sql.PreparedStatement pst = conn.prepareStatement(sql);
             java.sql.ResultSet rs = pst.executeQuery(sql);
-            int no = 1;
             while(rs.next()){
                 tabel.addRow(new Object[] {
-                    no++,
                     rs.getString(1),
                     rs.getString(2),
+                    rs.getString(3),
                 });
             } tableAdmin.setModel(tabel);
         } catch (Exception e) {
@@ -119,24 +146,23 @@ public class dashboard extends javax.swing.JFrame {
     
     public void tampilLayanan(){
         DefaultTableModel tabel = new DefaultTableModel();
-        tabel.addColumn("No");
+        tabel.addColumn("Id");
         tabel.addColumn("Tipe");
         tabel.addColumn("Nama Layanan");
         tabel.addColumn("Harga");
         try {
             java.sql.Connection conn = (java.sql.Connection)con;
             // Query dengan JOIN untuk menampilkan jenis kendaraan
-            String sql = "SELECT t.jenis_kendaraan, l.nama_layanan, l.harga " + "FROM layanan l JOIN tipe t ON l.id_tipe = t.id";
+            String sql = "SELECT l.id, t.jenis_kendaraan, l.nama_layanan, l.harga " + "FROM layanan l JOIN tipe t ON l.id_tipe = t.id";
             java.sql.PreparedStatement pst = con.prepareStatement(sql);
             java.sql.ResultSet rs = pst.executeQuery();
-            int no = 1;
             // Tambahkan data ke tabel
             while(rs.next()){
                 tabel.addRow(new Object[] {
-                    no++,
-                    rs.getString(1), // jenis kendaraan
-                    rs.getString(2), // tipe layanan
-                    rs.getString(3), // Harga
+                    rs.getString(1), // id
+                    rs.getString(2), // jenis kendaraan
+                    rs.getString(3), // tipe layanan
+                    rs.getString(4), // Harga
                 });
             }
             tableLayanan.setModel(tabel);
@@ -148,7 +174,7 @@ public class dashboard extends javax.swing.JFrame {
 
     public void tampilPelanggan(){
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("No");
+        model.addColumn("Id");
         model.addColumn("Jenis");
         model.addColumn("No Kendaraan");
         model.addColumn("Nama");
@@ -156,16 +182,15 @@ public class dashboard extends javax.swing.JFrame {
         model.addColumn("Alamat");
 
         try {
-            String sql = "SELECT tipe.jenis_kendaraan, kendaraan.no_kendaraan, pelanggan.nama_pelanggan, pelanggan.no_whatsapp, pelanggan.alamat " +
+            String sql = "SELECT pelanggan.id, tipe.jenis_kendaraan, kendaraan.no_kendaraan, pelanggan.nama_pelanggan, pelanggan.no_whatsapp, pelanggan.alamat " +
                          "FROM pelanggan " +
                          "JOIN kendaraan ON pelanggan.id_kendaraan = kendaraan.id " +
                          "JOIN tipe ON kendaraan.id_tipe = tipe.id";
             java.sql.PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
-            int no = 1;
             while (rs.next()) {
                 model.addRow(new Object[]{
-                    no++,
+                    rs.getString("id"),
                     rs.getString("jenis_kendaraan"),
                     rs.getString("no_kendaraan"),
                     rs.getString("nama_pelanggan"),
@@ -181,7 +206,7 @@ public class dashboard extends javax.swing.JFrame {
     
     public void tampilInvoice(){
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("No");
+        model.addColumn("Id");
         model.addColumn("Admin");
         model.addColumn("Pelanggan");
         model.addColumn("Layanan");
@@ -217,10 +242,9 @@ public class dashboard extends javax.swing.JFrame {
             """;
             java.sql.PreparedStatement pst = con.prepareStatement(sql);
             ResultSet rs = pst.executeQuery();
-            int no = 1;
             while (rs.next()) {
                 model.addRow(new Object[]{
-                    no++,
+                    rs.getString("id_invoice"),
                     rs.getString("nama_admin"),
                     rs.getString("nama_pelanggan") + "(" + rs.getString("no_whatsapp") + ")",
                     rs.getString("nama_layanan"),
@@ -351,6 +375,12 @@ public class dashboard extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        tabbedPaneCustom1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tabbedPaneCustom1MouseClicked(evt);
+            }
+        });
+
         tabbedPaneCustom2.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 tabbedPaneCustom2FocusGained(evt);
@@ -380,9 +410,19 @@ public class dashboard extends javax.swing.JFrame {
                 "No", "Nama Admin", "No Whatsapp"
             }
         ));
+        tableAdmin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                tableAdminFocusGained(evt);
+            }
+        });
         tableAdmin.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tableAdminMouseClicked(evt);
+            }
+        });
+        tableAdmin.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                tableAdminKeyPressed(evt);
             }
         });
         jScrollPane1.setViewportView(tableAdmin);
@@ -520,9 +560,23 @@ public class dashboard extends javax.swing.JFrame {
                 tableLayananMouseClicked(evt);
             }
         });
+        tableLayanan.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                tableLayananKeyPressed(evt);
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tableLayananKeyReleased(evt);
+            }
+        });
         jScrollPane2.setViewportView(tableLayanan);
 
         jLabel8.setText("Tipe");
+
+        cmbBoxTipeLayanan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbBoxTipeLayananActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -924,7 +978,7 @@ public class dashboard extends javax.swing.JFrame {
         jLabel31.setForeground(new java.awt.Color(255, 0, 51));
         jLabel31.setText("Contoh : R0983AB");
 
-        resetInvoiceButton.setText("Reset");
+        resetInvoiceButton.setText("Refresh");
         resetInvoiceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 resetInvoiceButtonActionPerformed(evt);
@@ -975,7 +1029,6 @@ public class dashboard extends javax.swing.JFrame {
                         .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(searchInvoiceButton)
                             .addComponent(searchInvoiceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel31)
                 .addGap(0, 480, Short.MAX_VALUE))
             .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -992,13 +1045,30 @@ public class dashboard extends javax.swing.JFrame {
         jLabel18.setFont(new java.awt.Font("Helvetica Neue", 1, 36)); // NOI18N
         jLabel18.setText("Order");
 
+        cmbBoxLayananOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbBoxLayananOrderActionPerformed(evt);
+            }
+        });
+
         jLabel15.setText("Layanan");
 
         jLabel21.setText("Admin");
 
         adminOrderField.setEditable(false);
+        adminOrderField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                adminOrderFieldActionPerformed(evt);
+            }
+        });
 
         jLabel22.setText("Pelanggan");
+
+        cmbBoxPelangganOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbBoxPelangganOrderActionPerformed(evt);
+            }
+        });
 
         jLabel23.setText("Metode Pembayaran");
 
@@ -1417,6 +1487,9 @@ public class dashboard extends javax.swing.JFrame {
 
             JOptionPane.showMessageDialog(null, "Order berhasil disimpan!");
             selectedId = null;
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error saat menyimpan order: " + e.getMessage());
         }
@@ -1445,7 +1518,7 @@ public class dashboard extends javax.swing.JFrame {
         try {
             tampilInvoice(); // Kembalikan model asli
             searchInvoiceField.setText("");       // Kosongkan field pencarian
-            JOptionPane.showMessageDialog(null, "Data telah direset!");
+            JOptionPane.showMessageDialog(null, "Data telah direfresh!");
             selectedId = null;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
@@ -1512,6 +1585,9 @@ public class dashboard extends javax.swing.JFrame {
 
             searchInvoiceField.setText(""); // Kosongkan field pencarian
             selectedId = null;
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
         }
@@ -1562,6 +1638,9 @@ public class dashboard extends javax.swing.JFrame {
 
             // Simpan ID ke variabel global
             selectedId = tabel_klik;
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Gagal mengambil data");
             System.out.println(e.getMessage());
@@ -1587,6 +1666,9 @@ public class dashboard extends javax.swing.JFrame {
         alamatPelangganField.setText("");
         searchPelangganField.setText("");
         selectedId = null;
+        showTipeLayanan();
+        showTipePelanggan();
+        loadComboBoxOrder();
     }//GEN-LAST:event_resetPelangganButtonActionPerformed
 
     private void searchPelangganButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchPelangganButtonActionPerformed
@@ -1648,6 +1730,9 @@ public class dashboard extends javax.swing.JFrame {
             }
             searchPelangganField.setText("");
             selectedId = null;
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
         }
@@ -1663,6 +1748,9 @@ public class dashboard extends javax.swing.JFrame {
         noPelangganField.setText(tablePelanggan.getValueAt(row, 4).toString());
         alamatPelangganField.setText(tablePelanggan.getValueAt(row, 5).toString());
         searchPelangganField.setText("");
+        showTipeLayanan();
+        showTipePelanggan();
+        loadComboBoxOrder();
     }//GEN-LAST:event_tablePelangganMouseClicked
 
     private void addPelangganButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPelangganButtonActionPerformed
@@ -1707,6 +1795,9 @@ public class dashboard extends javax.swing.JFrame {
                         searchPelangganField.setText("");
                     }
                 }
+                showTipeLayanan();
+                showTipePelanggan();
+                loadComboBoxOrder();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Gagal: " + e.getMessage());
             }
@@ -1752,6 +1843,9 @@ public class dashboard extends javax.swing.JFrame {
                     alamatPelangganField.setText("");
                     searchPelangganField.setText("");
                     selectedId = null;
+                    showTipeLayanan();
+                    showTipePelanggan();
+                    loadComboBoxOrder();
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "Gagal: " + e.getMessage());
@@ -1799,6 +1893,9 @@ public class dashboard extends javax.swing.JFrame {
                 alamatPelangganField.setText("");
                 searchPelangganField.setText("");
                 selectedId = null;
+                showTipeLayanan();
+                showTipePelanggan();
+                loadComboBoxOrder();
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Gagal menghapus data: " + e.getMessage());
@@ -1819,11 +1916,11 @@ public class dashboard extends javax.swing.JFrame {
             selectedId = tabel_klik;
 
             // Query SQL untuk mengambil data layanan dan tipe
-            String sql = "SELECT l.nama_layanan, l.harga, t.jenis_kendaraan, t.id AS id_tipe " +
+            String sql = "SELECT l.id, l.nama_layanan, l.harga, t.jenis_kendaraan, t.id AS id_tipe " +
             "FROM layanan l JOIN tipe t ON l.id_tipe = t.id " +
             "WHERE l.id = ?";
             java.sql.PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setString(1, tabel_klik);
+            pst.setString(1, selectedId);
 
             java.sql.ResultSet rs = pst.executeQuery();
             if (rs.next()) {
@@ -1837,6 +1934,9 @@ public class dashboard extends javax.swing.JFrame {
                 String id_tipe = rs.getString("id_tipe");
                 String jenis_kendaraan = rs.getString("jenis_kendaraan");
                 cmbBoxTipeLayanan.setSelectedItem(jenis_kendaraan); // Set item berdasarkan jenis kendaraan
+                showTipeLayanan();
+                showTipePelanggan();
+                loadComboBoxOrder();
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Gagal mengambil data: " + e.getMessage());
@@ -1851,6 +1951,9 @@ public class dashboard extends javax.swing.JFrame {
         hargaLayananField.setText("");
         cmbBoxTipeLayanan.setSelectedIndex(0); // Reset ComboBox
         selectedId = null;
+        showTipeLayanan();
+        showTipePelanggan();
+        loadComboBoxOrder();
     }//GEN-LAST:event_resetLayananButtonActionPerformed
 
     private void addLayananButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addLayananButtonActionPerformed
@@ -1908,6 +2011,9 @@ public class dashboard extends javax.swing.JFrame {
             cmbBoxTipeLayanan.setSelectedIndex(0); // Reset ComboBox
 
             tampilLayanan();
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Terjadi kesalahan: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
@@ -1976,7 +2082,9 @@ public class dashboard extends javax.swing.JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, "Tipe kendaraan tidak ditemukan!");
             }
-
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error saat memperbarui data: " + e.getMessage());
             e.printStackTrace();
@@ -1997,6 +2105,9 @@ public class dashboard extends javax.swing.JFrame {
             hargaLayananField.setText("");
             cmbBoxTipeLayanan.setSelectedIndex(0); // Reset ComboBox
             selectedId = null;
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e){
             JOptionPane.showMessageDialog(null, "Gagal dihapus");
             System.out.println(e.getMessage());
@@ -2008,6 +2119,9 @@ public class dashboard extends javax.swing.JFrame {
         Adminnama_adminField.setText(null);
         Adminno_whatsappField.setText(null);
         selectedId = null;
+        showTipeLayanan();
+        showTipePelanggan();
+        loadComboBoxOrder();
     }//GEN-LAST:event_resetAdminButtonActionPerformed
 
     private void deleteAdminButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteAdminButtonActionPerformed
@@ -2022,6 +2136,9 @@ public class dashboard extends javax.swing.JFrame {
             Adminnama_adminField.setText(null);
             Adminno_whatsappField.setText(null);
             selectedId = null;
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e){
             JOptionPane.showMessageDialog(null, "Gagal dihapus");
             System.out.println(e.getMessage());
@@ -2064,12 +2181,17 @@ public class dashboard extends javax.swing.JFrame {
             Adminnama_adminField.setText(null);
             Adminno_whatsappField.setText(null);
             selectedId = null;
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e){
             JOptionPane.showMessageDialog(null, "Gagal diedit");
             System.out.println(e.getMessage());
         }
     }//GEN-LAST:event_editAdminButtonActionPerformed
 
+    
+    
     private void tableAdminMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableAdminMouseClicked
         // TODO add your handling code here:
         try {
@@ -2079,14 +2201,15 @@ public class dashboard extends javax.swing.JFrame {
             // Ambil baris yang diklik
             int row = tableAdmin.getSelectedRow();
             String tabel_klik = tableAdmin.getModel().getValueAt(row, 0).toString(); // ID dari kolom pertama
-
+            
             // Simpan ID ke variabel global
             selectedId = tabel_klik;
-
+            
+           
             // Query SQL untuk mengambil data admin
             String sql = "SELECT * FROM admin WHERE id = ?";
             java.sql.PreparedStatement pst = conn.prepareStatement(sql);
-            pst.setString(1, tabel_klik);
+            pst.setString(1, selectedId);
 
             java.sql.ResultSet rs = pst.executeQuery();
             if (rs.next()) {
@@ -2096,6 +2219,9 @@ public class dashboard extends javax.swing.JFrame {
                 String no_whatsapp = rs.getString("no_whatsapp");
                 Adminno_whatsappField.setText(no_whatsapp);
             }
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Gagal mengambil data");
             System.out.println(e.getMessage());
@@ -2137,12 +2263,161 @@ public class dashboard extends javax.swing.JFrame {
             tampilAdmin();
             Adminnama_adminField.setText(null);
             Adminno_whatsappField.setText(null);
-
+            showTipeLayanan();
+            showTipePelanggan();
+            loadComboBoxOrder();
         } catch (Exception e){
             JOptionPane.showMessageDialog(null, "Gagal disimpan");
             System.out.println(e.getMessage());
         }
     }//GEN-LAST:event_addAdminButtonActionPerformed
+
+    private void tableAdminFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tableAdminFocusGained
+        // TODO add your handling code here:
+        // TODO add your handling code here:
+        try {
+            // Ambil koneksi database
+            java.sql.Connection conn = (java.sql.Connection) con;
+
+            // Ambil baris yang diklik
+            int row = tableAdmin.getSelectedRow();
+            String tabel_klik = tableAdmin.getModel().getValueAt(row, 0).toString(); // ID dari kolom pertama
+
+            // Query SQL untuk mengambil data admin
+            String sql = "SELECT * FROM admin WHERE id = ?";
+            java.sql.PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, selectedId);
+
+            java.sql.ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                // Isi input field dengan data admin
+                String nama_admin = rs.getString("nama_admin");
+                Adminnama_adminField.setText(nama_admin);
+                String no_whatsapp = rs.getString("no_whatsapp");
+                Adminno_whatsappField.setText(no_whatsapp);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Gagal mengambil data");
+            System.out.println(e.getMessage());
+        }
+    }//GEN-LAST:event_tableAdminFocusGained
+
+    private void tableAdminKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tableAdminKeyPressed
+        // TODO add your handling code here:
+        // Periksa apakah tombol yang ditekan adalah tombol panah atas atau bawah
+        if (evt.getKeyCode() == KeyEvent.VK_UP || evt.getKeyCode() == KeyEvent.VK_DOWN) {
+            // Dapatkan baris yang saat ini dipilih
+            int row = tableAdmin.getSelectedRow();
+
+            // Jika baris valid, panggil metode untuk memperbarui text field
+            if (row != -1) {
+                updateTextFieldsAdmin(row);
+            }
+        }
+    }//GEN-LAST:event_tableAdminKeyPressed
+
+    private void tableLayananKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tableLayananKeyReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tableLayananKeyReleased
+
+    private void tableLayananKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tableLayananKeyPressed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_tableLayananKeyPressed
+
+    private void cmbBoxLayananOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBoxLayananOrderActionPerformed
+        // TODO add your handling code here:
+        showTipeLayanan();
+    }//GEN-LAST:event_cmbBoxLayananOrderActionPerformed
+
+    private void cmbBoxPelangganOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBoxPelangganOrderActionPerformed
+        // TODO add your handling code here:
+        showTipePelanggan();
+    }//GEN-LAST:event_cmbBoxPelangganOrderActionPerformed
+
+    private void tabbedPaneCustom1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabbedPaneCustom1MouseClicked
+        // TODO add your handling code here:
+        showTipeLayanan();
+        showTipePelanggan();
+        loadComboBoxOrder();
+    }//GEN-LAST:event_tabbedPaneCustom1MouseClicked
+
+    private void cmbBoxTipeLayananActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBoxTipeLayananActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbBoxTipeLayananActionPerformed
+
+    private void adminOrderFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adminOrderFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_adminOrderFieldActionPerformed
+    
+    private void updateTextFieldsAdmin(int row) {
+        try {
+            // Ambil koneksi database
+            java.sql.Connection conn = (java.sql.Connection) con;
+
+            // Ambil ID dari kolom pertama
+            String tabel_klik = tableAdmin.getModel().getValueAt(row, 0).toString(); // ID dari kolom pertama
+
+            // Simpan ID ke variabel global
+            selectedId = tabel_klik;
+
+            // Query SQL untuk mengambil data admin
+            String sql = "SELECT * FROM admin WHERE id = ?";
+            java.sql.PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, selectedId);
+
+            java.sql.ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                // Isi input field dengan data admin
+                String nama_admin = rs.getString("nama_admin");
+                Adminnama_adminField.setText(nama_admin);
+                String no_whatsapp = rs.getString("no_whatsapp");
+                Adminno_whatsappField.setText(no_whatsapp);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Gagal mengambil data");
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    private void updateTextFieldsPelanggan(int row) {
+        try {
+            // Ambil koneksi database
+            java.sql.Connection conn = (java.sql.Connection) con;
+
+            // Ambil ID dari kolom pertama
+            String tabel_klik = tablePelanggan.getModel().getValueAt(row, 0).toString(); // ID dari kolom pertama
+
+            // Simpan ID ke variabel global
+            selectedId = tabel_klik;
+
+            // Query SQL untuk mengambil data admin
+            String sql = "SELECT * FROM pelanggan WHERE id = ?";
+            java.sql.PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, selectedId);
+
+            java.sql.ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                // TODO add your handling code here:
+//                int row = tablePelanggan.getSelectedRow();
+//                selectedId = tablePelanggan.getValueAt(row, 0).toString();
+//                cmbBoxTipePelanggan.setSelectedItem(tablePelanggan.getValueAt(row, 1).toString());
+//                noKendaraanPelangganField.setText(tablePelanggan.getValueAt(row, 2).toString());
+//                namaPelangganField.setText(tablePelanggan.getValueAt(row, 3).toString());
+//                noPelangganField.setText(tablePelanggan.getValueAt(row, 4).toString());
+//                alamatPelangganField.setText(tablePelanggan.getValueAt(row, 5).toString());
+//                searchPelangganField.setText("");
+                // Isi input field dengan data admin
+                String nama_admin = rs.getString("nama_admin");
+                Adminnama_adminField.setText(nama_admin);
+                String no_whatsapp = rs.getString("no_whatsapp");
+                Adminno_whatsappField.setText(no_whatsapp);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Gagal mengambil data");
+            System.out.println(e.getMessage());
+        }
+    }
     
     // Method untuk menampilkan data pada ComboBox
     private void loadComboBoxOrder() {
@@ -2151,6 +2426,9 @@ public class dashboard extends javax.swing.JFrame {
             String queryLayanan = "SELECT nama_layanan FROM layanan";
             java.sql.PreparedStatement psLayanan = con.prepareStatement(queryLayanan);
             ResultSet rsLayanan = psLayanan.executeQuery();
+            
+            cmbBoxLayananOrder.removeAllItems();
+            
             while (rsLayanan.next()) {
                 cmbBoxLayananOrder.addItem(rsLayanan.getString("nama_layanan"));
             }
@@ -2159,10 +2437,14 @@ public class dashboard extends javax.swing.JFrame {
             String queryPelanggan = "SELECT nama_pelanggan FROM pelanggan";
             java.sql.PreparedStatement psPelanggan = con.prepareStatement(queryPelanggan);
             ResultSet rsPelanggan = psPelanggan.executeQuery();
+            
+            cmbBoxPelangganOrder.removeAllItems();
+            
             while (rsPelanggan.next()) {
                 cmbBoxPelangganOrder.addItem(rsPelanggan.getString("nama_pelanggan"));
             }
 
+            cmbBoxMetodeOrder.removeAllItems();
             // Untuk metode pembayaran manual
             cmbBoxMetodeOrder.addItem("Cash");
             cmbBoxMetodeOrder.addItem("QRIS");
@@ -2253,11 +2535,11 @@ public class dashboard extends javax.swing.JFrame {
     private javax.swing.JButton addPelangganButton1;
     private javax.swing.JTextField adminOrderField;
     private javax.swing.JTextField alamatPelangganField;
-    private javax.swing.JComboBox<String> cmbBoxLayananOrder;
-    private javax.swing.JComboBox<String> cmbBoxMetodeOrder;
-    private javax.swing.JComboBox<String> cmbBoxPelangganOrder;
-    private javax.swing.JComboBox<String> cmbBoxTipeLayanan;
-    private javax.swing.JComboBox<String> cmbBoxTipePelanggan;
+    private static javax.swing.JComboBox<String> cmbBoxLayananOrder;
+    private static javax.swing.JComboBox<String> cmbBoxMetodeOrder;
+    private static javax.swing.JComboBox<String> cmbBoxPelangganOrder;
+    private static javax.swing.JComboBox<String> cmbBoxTipeLayanan;
+    private static javax.swing.JComboBox<String> cmbBoxTipePelanggan;
     private javax.swing.JButton deleteAdminButton;
     private javax.swing.JButton deleteInvoiceButton;
     private javax.swing.JButton deleteLayananButton;
